@@ -1,0 +1,3 @@
+.terraform*
+terraform.tfstate*
+set_env.sh
