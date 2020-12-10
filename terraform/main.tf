@@ -445,7 +445,7 @@ write_files:
     ooqMBlOXYxLJ2I9UcCu21Wj+CXJAPPbj/UZ79t59nC2yB5OmrniOFsMC
     -----END CERTIFICATE-----
 runcmd:
- - /usr/share/wallarm-common/addnode --force -H ${var.wallarm_api_domain} -u ${var.deploy_username} -p ${var.deploy_password} --name `hostname`
+ - /usr/share/wallarm-common/addnode --force -H ${var.wallarm_api_domain} -u ${var.deploy_username} -p '${var.deploy_password}' --name `hostname`
  - 'echo "sync_blacklist:" >> /etc/wallarm/node.yaml'
  - 'echo "  nginx_url: http://127.0.0.9/wallarm-acl" >> /etc/wallarm/node.yaml'
  - mkdir /var/cache/nginx/
