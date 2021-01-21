@@ -347,7 +347,7 @@ write_files:
      server {
        listen 80 default_server;
        server_name _;
-       wallarm_acl default;
+       # wallarm_acl default;
        wallarm_mode $wallarm_mode_real;
        # wallarm_instance 1;
        location /healthcheck {
@@ -367,7 +367,7 @@ write_files:
      server { 
        listen 443 ssl default_server;
        server_name _;
-       wallarm_acl default;
+       # wallarm_acl default;
        ssl_protocols TLSv1.2;
        ssl_ciphers         HIGH:!aNULL:!MD5;
        ssl_certificate /etc/nginx/cert.pem;
