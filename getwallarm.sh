@@ -89,7 +89,7 @@ get_distro() {
 			lsb_dist="$( rpm -qa \centos-release | cut -d"-" -f1 )"
 			osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
 			basearch=$(rpm -q --qf "%{arch}" -f /etc/$distro)
-		    if [ "$osrelease" = 8 ]; then
+		    elif [ "$osrelease" = 8 ]; then
 			pretty_name="centos"
 			lsb_dist="$( rpm -qa \centos-linux-release | cut -d"-" -f1 )"
 			# osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
