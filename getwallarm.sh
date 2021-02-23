@@ -195,22 +195,22 @@ do_install() {
 
 			log_message INFO "Configuring Wallarm repository..."
 			case $osrelease in
-				6)
-					if ! rpm --quiet -q epel-release; then
-						yum install --enablerepo=extras -y epel-release centos-release-SCL
-					fi
-					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/6/2.14/x86_64/Packages/wallarm-node-repo-1-4.el6.noarch.rpm
-					fi
-					;;
 				7)
 					if ! rpm --quiet -q epel-release; then
 						yum install -y epel-release
 					fi
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.14/x86_64/Packages/wallarm-node-repo-1-4.el7.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.16/x86_64/Packages/wallarm-node-repo-1-5.el7.noarch.rpm
 					fi
 					;;
+				8)
+					if ! rpm --quiet -q epel-release; then
+						yum install -y epel-release
+					fi
+					if ! rpm --quiet -q wallarm-node-repo; then
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/2.16/x86_64/Packages/wallarm-node-repo-1-5.el8.noarch.rpm
+					fi
+					;;					
 			esac
 
 			log_message INFO "Installing Wallarm packages..."
@@ -330,6 +330,10 @@ server {
 
   # Configure IP blocking using Wallarm blacklist ACL
   wallarm_acl default;
+
+  # Enable Libdetection
+  wallarm_enable_libdetection on;
+  proxy_request_buffering on;
 
   location / {
     # setting the address for request forwarding
