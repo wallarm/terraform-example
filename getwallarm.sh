@@ -165,7 +165,7 @@ do_install() {
 
 			log_message INFO "Configuring Wallarm repository..."
 			sh -c "echo 'deb http://repo.wallarm.com/$lsb_dist/wallarm-node\
-				$pretty_name/'\
+				$pretty_name/2.16/'\
 				>/etc/apt/sources.list.d/wallarm.list"
 			apt-get update
 
