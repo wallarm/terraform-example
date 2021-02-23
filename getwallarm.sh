@@ -83,7 +83,22 @@ get_distro() {
 	if [ -r /etc/os-release ]; then
 		lsb_dist="$(. /etc/os-release && echo "$ID")"
 		osrelease="$(. /etc/os-release && echo "$VERSION_ID")"
-		if [ "$osrelease" = "8" ]; then
+		if [ "$lsb_dist" = "centos" ]; then
+		    if [ "$osrelease" = 7 ]; then
+			pretty_name="centos"
+			lsb_dist="$( rpm -qa \centos-release | cut -d"-" -f1 )"
+			osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
+			basearch=$(rpm -q --qf "%{arch}" -f /etc/$distro)
+		    if [ "$osrelease" = 8 ]; then
+			pretty_name="centos"
+			lsb_dist="$( rpm -qa \centos-linux-release | cut -d"-" -f1 )"
+			# osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
+			basearch=$(rpm -q --qf "%{arch}" -f /etc/$distro)
+		    else
+			log_message ERROR "It looks like Wallarm does not support your Centos OS. Detected OS details: osrelease = \"$osrelease\""
+			exit 1
+		    fi
+		elif [ "$osrelease" = "8" ]; then
 			pretty_name="jessie"
 		elif [ "$osrelease" = 9 ]; then
 			pretty_name="stretch"
@@ -95,16 +110,10 @@ get_distro() {
 			pretty_name="xenial"
 		elif [ "$osrelease" = 18.04 ]; then
 			pretty_name="bionic"
-		elif [ "$osrelease" = 7 ]; then
-			pretty_name="centos"
-			lsb_dist="$( rpm -qa \centos-release | cut -d"-" -f1 )"
-			osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
-			basearch=$(rpm -q --qf "%{arch}" -f /etc/$distro)
 		else
 			log_message ERROR "It looks like Wallarm does not support your OS. Detected OS details: osrelease = \"$osrelease\""
 			exit 1
 		fi
-
 	elif [ -r /etc/centos-release ]; then
 		lsb_dist="$( rpm -qa \centos-release | cut -d"-" -f1 )"
 		osrelease="$( rpm -qa \centos-release | cut -d"-" -f3 )"
@@ -113,7 +122,6 @@ get_distro() {
 		log_message ERROR "It looks like Wallarm does not support your OS. Detected OS details: osrelease = \"$osrelease\""
 		exit 1
 	fi 
-
 
 	log_message INFO "Detected OS details: lsb_dist=$lsb_dist, osrelease=$osrelease, pretty_name=$pretty_name, basearch=$basearch"
 }
@@ -183,6 +191,8 @@ do_install() {
 			echo "baseurl=https://nginx.org/packages/centos/$osrelease/$basearch/" >> /etc/yum.repos.d/nginx.repo
 			echo "gpgcheck=0" >> /etc/yum.repos.d/nginx.repo
 			echo "enabled=1" >> /etc/yum.repos.d/nginx.repo
+			echo "gpgkey=https://nginx.org/keys/nginx_signing.key" >> /etc/yum.repos.d/nginx.repo
+			echo "module_hotfixes=true" >> /etc/yum.repos.d/nginx.repo
 
 			log_message INFO "Installing official Nginx packages..."
 			yum update -y
