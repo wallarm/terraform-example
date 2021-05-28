@@ -209,7 +209,7 @@ do_install() {
 						yum install -y epel-release
 					fi
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.18/x86_64/Packages/wallarm-node-repo-1-5.el7.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.18/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
 					fi
 					;;
 				8)
@@ -217,7 +217,7 @@ do_install() {
 						yum install -y epel-release
 					fi
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/2.18/x86_64/Packages/wallarm-node-repo-1-5.el8.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/2.18/x86_64/Packages/wallarm-node-repo-1-6.el8.noarch.rpm
 					fi
 					;;					
 			esac
