@@ -355,6 +355,24 @@ server {
 
 EOF
 
+	if [ -n "$WALLARM_STATUS_ALLOW" ]; then
+		log_message INFO "Creating an external 'wallarm-status' location..."
+		{
+		printf "  location /wallarm-status {\n"
+		for cidr in $(echo "$WALLARM_STATUS_ALLOW" | sed "s/,/ /g"); do
+			printf "    allow %s;\n" "$cidr"
+		done
+		printf "    deny all;\n"
+		printf "    wallarm_status on;\n"
+		printf "    wallarm_mode off;\n"
+		printf "  }\n\n"
+		} >/tmp/wallarm-status.conf
+
+		line_for_insert=$(grep -n "location / {" "$CONF_FILE" | cut -f 1 -d:)
+		line_for_insert=$((line_for_insert - 1))
+		sed -i "${line_for_insert}r /tmp/wallarm-status.conf" "$CONF_FILE"
+	fi
+
 	CONF_FILE2=/etc/nginx/conf.d/wallarm-acl.conf
 	log_message INFO "Creating Nginx configuration file $CONF_FILE2..."
 cat > $CONF_FILE2 << EOF
