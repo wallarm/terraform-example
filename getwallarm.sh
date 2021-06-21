@@ -276,7 +276,7 @@ add_node() {
 	fi
 
 	log_message INFO "Running $ADDNODE_SCRIPT script to add the new to the Wallarm cloud (API endpoint $API_HOST)..."
- 	if ! $ADDNODE_SCRIPT --force -H "$API_HOST" --username "$API_USERNAME" --password "$API_PASSWORD" --name "$MY_NODE_NAME"; then
+	if ! $ADDNODE_SCRIPT --force -H "$API_HOST" -P "$API_PORT" "$API_SSL_ARG" --username "$API_USERNAME" --password "$API_PASSWORD" --name "$MY_NODE_NAME"; then
 		log_message CRITICAL "Failed to register the node in Wallarm Cloud - aborting..."
 		exit 1
 	fi
@@ -613,6 +613,8 @@ test_proxy() {
 
 # By default use the Wallarm EU site
 API_SITE=eu
+API_PORT=444
+API_SSL_ARG=""
 
 MY_NODE_NAME=`hostname`
 
@@ -665,6 +667,20 @@ if [ "$API_SITE" = "us1" ]; then
 	API_HOST=us1.api.wallarm.com
 elif [ "$API_SITE" = "eu" ]; then
 	API_HOST=api.wallarm.com
+elif [ "$API_SITE" = "custom" ]; then
+	if [ -z "$WALLARM_API_HOST" ]; then
+		log_message ERROR "For a custom cloud, you must set the WALLARM_API_HOST environment variable"
+	else
+		API_HOST="$WALLARM_API_HOST"
+	fi
+
+	if [ -n "$WALLARM_API_PORT" ]; then
+		API_PORT="$WALLARM_API_PORT"
+	fi
+
+	if [ "$WALLARM_API_USE_SSL" = "false" ]; then
+		API_SSL_ARG="--no-ssl"
+	fi
 else
 	log_message ERROR "Unknown Wallarm site name \"$API_SITE\". Accepted Wallarm site names are EU and US1. Aborting."
 	usage
