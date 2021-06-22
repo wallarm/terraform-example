@@ -192,6 +192,16 @@ do_install() {
 			echo "enabled=1" >> /etc/yum.repos.d/nginx.repo
 			echo "gpgkey=https://nginx.org/keys/nginx_signing.key" >> /etc/yum.repos.d/nginx.repo
 			echo "module_hotfixes=true" >> /etc/yum.repos.d/nginx.repo
+			case $osrelease in
+				7)
+					if rpm --quiet -q epel-release; then
+						if ! rpm --quiet -q yum-utils; then
+							yum install -y yum-utils
+						fi
+						yum-config-manager --save --setopt=epel.exclude=nginx\*;
+					fi
+					;;					
+			esac
 
 			log_message INFO "Installing official Nginx packages..."
 			yum update -y
@@ -208,6 +218,10 @@ do_install() {
 					if ! rpm --quiet -q epel-release; then
 						yum install -y epel-release
 					fi
+					if ! rpm --quiet -q yum-utils; then
+						yum install -y yum-utils
+					fi
+					yum-config-manager  --save --setopt=epel.exclude=nginx\*;
 					if ! rpm --quiet -q wallarm-node-repo; then
 						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.18/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
 					fi
