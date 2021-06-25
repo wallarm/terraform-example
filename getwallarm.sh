@@ -33,7 +33,9 @@ usage() {
 			The WAF reverse proxy will be configured to handle traffic for the domain.
 		-o <ORIGIN_SERVER>
 			The WAF reverse proxy will be configured to send upstream requests to the
-			specified IP address or domain name."
+			specified IP address or domain name.
+		-x
+			Skip checking the DOMAIN NAME and the ORIGIN SERVER."
 }
 
 check_if_root() {
@@ -41,6 +43,28 @@ check_if_root() {
 	if [ "$(id -u)" -ne 0 ]; then
 		log_message ERROR "This script must be executed with root permissions" 
 		exit 1
+	fi
+}
+
+
+check_domain() {
+	if [ -z "$SKIP_CHECK" ] && [ -n "$DOMAIN_NAME" ]; then
+		log_message INFO "Checking '$DOMAIN_NAME' resolution..."
+		ping -c1 "$DOMAIN_NAME"
+		if [ "$?" -eq 2 ]; then
+			log_message ERROR "Failed to resolve '$DOMAIN_NAME'. Please specify an another domain name or use the '-x' option to skip this check." 
+	  		exit 1
+		fi
+	fi
+}
+
+check_origin() {
+	if [ -z "$SKIP_CHECK" ] && [ -n "$ORIGIN_NAME" ]; then
+		log_message INFO "Checking connectivity to '$ORIGIN_NAME'..."
+		if ! ping -c1 "$ORIGIN_NAME"; then
+			log_message ERROR "Failed to check connectivity to '$ORIGIN_NAME'. Please specify an another origin name or use the '-x' option to skip this check." 
+	  		exit 1
+		fi
 	fi
 }
 
@@ -632,7 +656,7 @@ API_SSL_ARG=""
 
 MY_NODE_NAME=`hostname`
 
-while getopts :hu:p:d:o:n:S: option
+while getopts :hu:p:d:o:n:S:x option
 do
 	case "$option" in
 		h)
@@ -662,6 +686,10 @@ do
 		S)	
 			# API site name (EU or US1)
 			API_SITE=`echo $OPTARG | tr '[:upper:]' '[:lower:]'`;
+			;;
+		x)
+			# Skip checking the DOMAIN NAME and the ORIGIN SERVER
+			SKIP_CHECK=1;
 			;;
 		*)
 			echo "Hmm, an invalid option was received."
@@ -702,6 +730,10 @@ else
 fi
 
 check_if_root
+
+check_domain
+
+check_origin
 
 disable_selinux
 
