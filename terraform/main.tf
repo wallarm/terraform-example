@@ -312,43 +312,15 @@ resource "aws_launch_configuration" "wallarm_launch_config" {
 #cloud-config
 
 write_files:
- - path: /etc/nginx/scanner-ips.conf
-   owner: root:root
-   permissions: '0644'
-   content: "${file("scanner-ips.conf")}"
- - path: /etc/nginx/conf.d/wallarm-acl.conf
-   owner: root:root
-   permissions: '0644'
-   content: |
-    wallarm_acl_db default {
-      wallarm_acl_path /var/cache/nginx/wallarm_acl_default;
-      wallarm_acl_mapsize 64m;
-    }
-    server {
-      listen 127.0.0.9:80;
-      server_name localhost;
-      allow 127.0.0.0/8;
-      deny all;
-      access_log off;
-      location /wallarm-acl {
-        wallarm_acl default;
-        wallarm_acl_api on;
-      }
-    }
  - path: /etc/nginx/sites-available/default
    owner: root:root
    permissions: '0644'
    content: |
      limit_req_zone $binary_remote_addr zone=mylimit:10m rate=5r/s;
-     map $remote_addr $wallarm_mode_real {
-     default block;
-       include /etc/nginx/scanner-ips.conf;
-     }
      server {
        listen 80 default_server;
        server_name _;
-       # wallarm_acl default;
-       wallarm_mode $wallarm_mode_real;
+       wallarm_mode block;
        # wallarm_instance 1;
        location /healthcheck {
          return 200;
@@ -367,7 +339,6 @@ write_files:
      server { 
        listen 443 ssl default_server;
        server_name _;
-       # wallarm_acl default;
        ssl_protocols TLSv1.2;
        ssl_ciphers         HIGH:!aNULL:!MD5;
        ssl_certificate /etc/nginx/cert.pem;
@@ -446,14 +417,11 @@ write_files:
     -----END CERTIFICATE-----
 runcmd:
  - /usr/share/wallarm-common/addnode --force -H ${var.wallarm_api_domain} -u ${var.deploy_username} -p '${var.deploy_password}' --name `hostname`
- - 'echo "sync_blacklist:" >> /etc/wallarm/node.yaml'
- - 'echo "  nginx_url: http://127.0.0.9/wallarm-acl" >> /etc/wallarm/node.yaml'
  - mkdir /var/cache/nginx/
  - chown www-data /var/cache/nginx/
  - nginx -t
  - service nginx start
  - service nginx reload
- - [ sed, -i, -Ee, 's/^#(.*sync-blacklist.*)/\1/', /etc/cron.d/wallarm-node-nginx ]
 EOF
 }
 
