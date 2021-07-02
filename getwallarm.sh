@@ -196,7 +196,7 @@ do_install() {
 			
 			log_message INFO "Configuring Wallarm repository..."
 			sh -c "echo 'deb http://repo.wallarm.com/$lsb_dist/wallarm-node\
-				$pretty_name/2.18/'\
+				$pretty_name/3.0/'\
 				>/etc/apt/sources.list.d/wallarm.list"
 			apt-get update
 
@@ -247,7 +247,7 @@ do_install() {
 					fi
 					yum-config-manager  --save --setopt=epel.exclude=nginx\*;
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/2.18/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/3.0/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
 					fi
 					;;
 				8)
@@ -255,7 +255,7 @@ do_install() {
 						yum install -y epel-release
 					fi
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/2.18/x86_64/Packages/wallarm-node-repo-1-6.el8.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/3.0/x86_64/Packages/wallarm-node-repo-1-6.el8.noarch.rpm
 					fi
 					;;					
 			esac
@@ -322,17 +322,6 @@ add_node() {
 		log_message CRITICAL "Node configuration $NODE_CONF is empty or does not exist - aborting."
 		exit 1
 	fi 
-
-	echo "sync_blacklist:" >> "$NODE_CONF"
-    	echo "  nginx_url: http://127.0.0.9/wallarm-acl" >> "$NODE_CONF"
-
-	NGINX_CRON_FILE=/etc/cron.d/wallarm-node-nginx
-	log_message INFO  "Updating $NGINX_CRON_FILE to enabled the syncing of black lists..."
-
-	if ! sed -i -Ee 's/^#(.*sync-blacklist.*)/\1/' $NGINX_CRON_FILE; then
-		log_message CRITICAL "Failed to update file $NGINX_CRON_FILE - aborting."
-		exit 1
-	fi
 }
 
 #
@@ -359,24 +348,14 @@ cat > $CONF_FILE << EOF
 # Set global Wallarm WAF mode to "block"
 wallarm_mode block;
 
-map \$remote_addr \$wallarm_mode_real {
-  default block;
-  include /etc/nginx/scanner-ip-list;
-}
-
 server {
 
   listen       80;
   # the domains for which traffic is processed
   server_name $DOMAIN_NAME;
 
-  # turn on the Wallarm WAF blocking mode
-  wallarm_mode \$wallarm_mode_real;
   # wallarm_mode monitoring; 
   # wallarm_instance 1;
-
-  # Configure IP blocking using Wallarm blacklist ACL
-  wallarm_acl default;
 
   # Enable Libdetection
   wallarm_enable_libdetection on;
@@ -411,211 +390,6 @@ EOF
 		sed -i "${line_for_insert}r /tmp/wallarm-status.conf" "$CONF_FILE"
 	fi
 
-	CONF_FILE2=/etc/nginx/conf.d/wallarm-acl.conf
-	log_message INFO "Creating Nginx configuration file $CONF_FILE2..."
-cat > $CONF_FILE2 << EOF
-wallarm_acl_db default {
-    wallarm_acl_path /var/cache/nginx/wallarm_acl_default;
-    wallarm_acl_mapsize 64m;
-}
-
-server {
-    listen 127.0.0.9:80;
-
-    server_name localhost;
-
-    allow 127.0.0.0/8;
-    deny all;
-
-    access_log off;
-
-    location /wallarm-acl {
-        wallarm_acl default;
-        wallarm_acl_api on;
-    }
-}
-
-EOF
-
-	SCANNER_IPS=/etc/nginx/scanner-ip-list
-	log_message INFO "Creating file $SCANNER_IPS with a list of Wallarm scanner IPs..."
-cat > $SCANNER_IPS << EOF
-# US scanners 
-23.239.18.250 off;
-104.237.155.105 off;
-45.56.71.221 off;
-45.79.194.128 off;
-104.237.151.202 off;
-45.33.15.249 off;
-45.33.43.225 off;
-45.79.10.15 off;
-45.33.79.18 off;
-45.79.75.59 off;
-23.239.30.236 off;
-50.116.11.251 off;
-45.56.123.144 off;
-45.79.143.18 off;
-172.104.21.210 off;
-74.207.237.202 off;
-45.79.186.159 off;
-45.79.216.187 off;
-45.33.16.32 off;
-96.126.127.23 off;
-172.104.208.113 off;
-192.81.135.28 off;
-35.236.51.79 off;
-35.236.75.97 off;
-35.236.111.124 off;
-35.236.108.88 off;
-35.236.16.246 off;
-35.236.61.185 off;
-35.236.110.91 off;
-35.236.14.198 off;
-35.235.124.137 off;
-35.236.48.47 off;
-35.236.100.176 off;
-35.236.18.117 off;
-35.235.112.188 off;
-35.236.55.214 off;
-35.236.126.84 off;
-35.236.3.158 off;
-35.236.127.211 off;
-35.236.118.146 off;
-35.236.20.89 off;
-35.236.1.4 off;
-
-# EU scanners 
-139.162.130.66 off;
-139.162.144.202 off;
-139.162.151.10 off;
-139.162.151.155 off;
-139.162.156.102 off;
-139.162.157.131 off;
-139.162.158.79 off;
-139.162.159.137 off;
-139.162.159.244 off;
-139.162.163.61 off;
-139.162.164.41 off;
-139.162.166.202 off;
-139.162.167.19 off;
-139.162.167.51 off;
-139.162.168.17 off;
-139.162.170.84 off;
-139.162.171.141 off;
-139.162.172.35 off;
-139.162.174.220 off;
-139.162.174.26 off;
-139.162.175.71 off;
-139.162.176.169 off;
-139.162.178.148 off;
-139.162.179.214 off;
-139.162.180.37 off;
-139.162.182.156 off;
-139.162.182.20 off;
-139.162.184.225 off;
-139.162.185.243 off;
-139.162.186.136 off;
-139.162.187.138 off;
-139.162.188.246 off;
-139.162.190.22 off;
-139.162.190.86 off;
-139.162.191.89 off;
-85.90.246.120 off;
-104.200.29.36 off;
-104.237.151.23 off;
-173.230.130.253 off;
-173.230.138.206 off;
-173.230.156.200 off;
-173.230.158.207 off;
-173.255.192.83 off;
-173.255.193.92 off;
-173.255.200.80 off;
-173.255.214.180 off;
-192.155.82.205 off;
-23.239.11.21 off;
-23.92.18.13 off;
-23.92.30.204 off;
-45.33.105.35 off;
-45.33.33.19 off;
-45.33.41.31 off;
-45.33.64.71 off;
-45.33.65.37 off;
-45.33.72.81 off;
-45.33.73.43 off;
-45.33.80.65 off;
-45.33.81.109 off;
-45.33.88.42 off;
-45.33.97.86 off;
-45.33.98.89 off;
-45.56.102.9 off;
-45.56.104.7 off;
-45.56.113.41 off;
-45.56.114.24 off;
-45.56.119.39 off;
-50.116.35.43 off;
-50.116.42.181 off;
-50.116.43.110 off;
-66.175.222.237 off;
-66.228.58.101 off;
-69.164.202.55 off;
-72.14.181.105 off;
-72.14.184.100 off;
-72.14.191.76 off;
-172.104.150.243 off;
-139.162.190.165 off;
-139.162.130.123 off;
-139.162.132.87 off;
-139.162.145.238 off;
-139.162.146.245 off;
-139.162.162.71 off;
-139.162.171.208 off;
-139.162.184.33 off;
-139.162.186.129 off;
-172.104.128.103 off;
-172.104.128.67 off;
-172.104.139.37 off;
-172.104.146.90 off;
-172.104.151.59 off;
-172.104.152.244 off;
-172.104.152.96 off;
-172.104.154.128 off;
-172.104.229.59 off;
-172.104.250.27 off;
-172.104.252.112 off;
-45.33.115.7 off;
-45.56.69.211 off;
-45.79.16.240 off;
-50.116.23.110 off;
-85.90.246.49 off;
-172.104.139.18 off;
-172.104.152.28 off;
-139.162.177.83 off;
-172.104.240.115 off;
-172.105.64.135 off;
-139.162.153.16 off;
-172.104.241.162 off;
-139.162.167.48 off;
-172.104.233.100 off;
-172.104.157.26 off;
-172.105.65.182 off;
-178.32.42.221 off;
-46.105.75.84 off;
-51.254.85.145 off;
-188.165.30.182 off;
-188.165.136.41 off;
-188.165.137.10 off;
-54.36.135.252 off;
-54.36.135.253 off;
-54.36.135.254 off;
-54.36.135.255 off;
-54.36.131.128 off;
-54.36.131.129 off;
-
-EOF
-
-	log_message INFO "Creating Nginx cache directory /var/cache/nginx/wallarm_acl_default..."
-	mkdir -p /var/cache/nginx/wallarm_acl_default
-	chown nginx /var/cache/nginx/wallarm_acl_default
 
 	log_message INFO "Using 'nginx -t' command verifying that the Nginx configuration is correct..."
 	if ! nginx -t; then
