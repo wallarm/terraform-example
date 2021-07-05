@@ -122,16 +122,8 @@ get_distro() {
 			log_message ERROR "It looks like Wallarm does not support your Centos OS. Detected OS details: osrelease = \"$osrelease\""
 			exit 1
 		    fi
-		elif [ "$osrelease" = "8" ]; then
-			pretty_name="jessie"
-		elif [ "$osrelease" = 9 ]; then
-			pretty_name="stretch"
 		elif [ "$osrelease" = 10 ]; then
 			pretty_name="buster"
-		elif [ "$osrelease" = 14.04 ]; then
-			pretty_name="trusty"
-		elif [ "$osrelease" = 16.04 ]; then
-			pretty_name="xenial"
 		elif [ "$osrelease" = 18.04 ]; then
 			pretty_name="bionic"
 		elif [ "$osrelease" = 20.04 ]; then
