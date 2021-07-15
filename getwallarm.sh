@@ -61,7 +61,7 @@ check_domain() {
 check_origin() {
 	if [ -z "$SKIP_CHECK" ] && [ -n "$ORIGIN_NAME" ]; then
 		log_message INFO "Checking connectivity to '$ORIGIN_NAME'..."
-		if ! ping -c1 "$ORIGIN_NAME"; then
+		if ! curl "$ORIGIN_NAME"; then
 			log_message ERROR "Failed to check connectivity to '$ORIGIN_NAME'. Please specify an another origin name or use the '-x' option to skip this check." 
 	  		exit 1
 		fi
