@@ -188,7 +188,7 @@ do_install() {
 			
 			log_message INFO "Configuring Wallarm repository..."
 			sh -c "echo 'deb http://repo.wallarm.com/$lsb_dist/wallarm-node\
-				$pretty_name/3.0/'\
+				$pretty_name/3.2/'\
 				>/etc/apt/sources.list.d/wallarm.list"
 			apt-get update
 
@@ -239,7 +239,7 @@ do_install() {
 					fi
 					yum-config-manager  --save --setopt=epel.exclude=nginx\*;
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/3.0/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/7/3.2/x86_64/Packages/wallarm-node-repo-1-6.el7.noarch.rpm
 					fi
 					;;
 				8)
@@ -247,7 +247,7 @@ do_install() {
 						yum install -y epel-release
 					fi
 					if ! rpm --quiet -q wallarm-node-repo; then
-						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/3.0/x86_64/Packages/wallarm-node-repo-1-6.el8.noarch.rpm
+						rpm -i https://repo.wallarm.com/centos/wallarm-node/8/3.2/x86_64/Packages/wallarm-node-repo-1-6.el8.noarch.rpm
 					fi
 					;;					
 			esac
