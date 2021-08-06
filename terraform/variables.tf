@@ -41,7 +41,7 @@ variable "wordpress_instance_type" {
 
 variable "wallarm_node_ami_id" {
   type    = string
-  default = "ami-06b76dd66ebcbf28f"
+  default = "ami-0bbad26903d63204d"
 }
 
 variable "waf_node_instance_type" {
