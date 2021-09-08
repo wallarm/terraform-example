@@ -21,7 +21,7 @@ usage() {
 		-h
 			This help message.
 		-S <SITE_NAME>
-			The name of used Wallarm site: EU or US1 (by default the script uses EU site).
+			The name of used Wallarm site: EU, RU or US1 (by default the script uses EU site).
 		-u <DEPLOY_USER>
 			The username to be used for the new node registration process.
 		-p <DEPLOY_PASSWORD>
@@ -450,7 +450,7 @@ do
 			ORIGIN_NAME=$OPTARG;
 			;;
 		S)	
-			# API site name (EU or US1)
+			# API site name (EU, RU or US1)
 			API_SITE=`echo $OPTARG | tr '[:upper:]' '[:lower:]'`;
 			;;
 		x)
@@ -475,6 +475,8 @@ if [ "$API_SITE" = "us1" ]; then
 	API_HOST=us1.api.wallarm.com
 elif [ "$API_SITE" = "eu" ]; then
 	API_HOST=api.wallarm.com
+elif [ "$API_SITE" = "ru" ]; then
+	API_HOST=api.wallarm.ru
 elif [ "$API_SITE" = "custom" ]; then
 	if [ -z "$WALLARM_API_HOST" ]; then
 		log_message ERROR "For a custom cloud, you must set the WALLARM_API_HOST environment variable"
@@ -490,7 +492,7 @@ elif [ "$API_SITE" = "custom" ]; then
 		API_SSL_ARG="--no-ssl"
 	fi
 else
-	log_message ERROR "Unknown Wallarm site name \"$API_SITE\". Accepted Wallarm site names are EU and US1. Aborting."
+	log_message ERROR "Unknown Wallarm site name \"$API_SITE\". Accepted Wallarm site names are EU, RU or US1. Aborting."
 	usage
 	exit 1
 fi
